@@ -11,8 +11,8 @@ Send a single `POST /v1/chat/completions` request through Dahl to confirm everyt
 
 ## Before you start
 
-- An API key (see [Authentication](/authentication))
-- Enough **available tokens** on the key for at least one request (new keys include a starter balance)
+- An API key (see [API keys](/authentication))
+- Each new key currently includes **100 million tokens** — no account signup required
 - A fresh model ID from `GET /v1/models` — do not guess IDs or copy them from marketing pages
 
 <Tip>
@@ -48,7 +48,7 @@ export DAHL_API_KEY="your-api-token"
 
 ## Step 2 — List available models
 
-`GET /v1/models` is public — no Authorization header required.
+`GET /v1/models` is public — no API key required.
 
 ```bash
 curl https://inference.dahl.global/v1/models
@@ -97,13 +97,12 @@ A successful request returns **200 OK**. The assistant text is in `choices[0].me
 | --- | --- | --- |
 | `401` with `Missing API token` | No `Authorization` header | Add `Authorization: Bearer` with your token |
 | `401` with `invalid API token` or `expired API token` | Key is wrong or no longer valid | Create a new key via [inference.dahl.global/#api-key](https://inference.dahl.global/#api-key) or `POST /tokens` |
-| `402` with `available tokens exhausted` | The key has no remaining balance | Get a new key or wait for quota refresh |
 | `4xx` / `502` from upstream | Stale or unsupported `model` id | Call `GET /v1/models` and use an `id` from the response |
 | `503` or timeouts | Network or node overload | Retry with short backoff |
 
 ## See also
 
-- [Authentication](/authentication) — how tokens work and how to check balance
+- [API keys](/authentication) — how keys are issued and used
 - [Models](/models) — model IDs and selection tips
 - [Try chat](https://inference.dahl.global/chat) — browser UI with the same API underneath
-- [inference.dahl.global](https://inference.dahl.global) — landing, pricing context, and API key UI
+- [inference.dahl.global](https://inference.dahl.global) — landing and API key UI

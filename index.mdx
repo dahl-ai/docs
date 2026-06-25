@@ -1,6 +1,6 @@
 ---
 title: "Introduction"
-description: "OpenAI-compatible inference API on the Gonka network — fast start, transparent pricing, no vendor lock-in."
+description: "OpenAI-compatible inference API on the Gonka network — fast start, no vendor lock-in."
 ---
 
 Dahl gives you an **OpenAI-compatible API** for open models running on decentralized GPU infrastructure. Use the same endpoints and request shape you already know (`/v1/models`, `/v1/chat/completions`), with a Bearer token from the landing page or `POST /tokens`.
@@ -25,7 +25,7 @@ Dahl gives you an **OpenAI-compatible API** for open models running on decentral
 ## How it works
 
 1. **Get a token** — `POST https://inference.dahl.global/tokens` or use [inference.dahl.global/#api-key](https://inference.dahl.global/#api-key).
-2. **List models** — `GET /v1/models` (no auth required).
+2. **List models** — `GET /v1/models` (no API key required).
 3. **Call the API** — `POST /v1/chat/completions` with `Authorization: Bearer` and your token.
 
 The recommended default model is **MiniMax M2.7** (`MiniMaxAI/MiniMax-M2.7`). Other models are listed on the network; always pick IDs from `GET /v1/models` rather than hardcoding stale values.
