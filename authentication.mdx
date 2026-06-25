@@ -1,0 +1,74 @@
+---
+title: "Authentication and API keys"
+description: "Create Bearer tokens, attach them to requests, and monitor available balance."
+---
+
+Dahl uses **Bearer token** authentication on inference endpoints. The token is a secret string returned when you create a key — send it in the `Authorization` header on every `POST /v1/chat/completions` request.
+
+## Create a key
+
+### Landing page
+
+Go to [dahl.global/#api-key](https://dahl.global/#api-key). The page calls `POST /tokens` automatically and shows the key with a copy button.
+
+### API
+
+```bash
+curl -X POST https://inference.dahl.global/tokens
+```
+
+Response fields:
+
+| Field | Description |
+| --- | --- |
+| `token` | The API key — use in `Authorization: Bearer` |
+| `available_tokens` | Remaining usage budget for this key |
+
+## Use the key on requests
+
+```bash
+curl https://inference.dahl.global/v1/chat/completions \
+  -H "Authorization: Bearer $DAHL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"Hi"}]}'
+```
+
+The header must be exactly two words: `Bearer` followed by the token. Other formats are treated as missing auth.
+
+## Check balance
+
+```bash
+curl https://inference.dahl.global/tokens/current \
+  -H "Authorization: Bearer $DAHL_API_KEY"
+```
+
+Returns `available_tokens` for the authenticated key.
+
+## Public endpoints
+
+These do **not** require a token:
+
+- `GET /v1/models` — list model IDs
+- `GET /health` — service health
+
+## Error responses
+
+Auth failures return **401** with a JSON body:
+
+```json
+{
+  "error": {
+    "message": "Missing API token"
+  }
+}
+```
+
+Other messages you may see: `invalid API token`, `expired API token`.
+
+When the key has no budget left, chat completions return **402** with `available tokens exhausted`. Create a new key or wait until balance is restored.
+
+## Security practices
+
+- Do not commit tokens to source control — use environment variables or a secrets manager
+- Rotate keys if they may have been exposed
+- Prefer separate keys per environment (development, staging, production) when Dahl supports multiple keys per account

@@ -1,47 +1,109 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Quickstart: first request"
+description: "Send one OpenAI-compatible chat completion through Dahl to verify your API key and model access."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
+Send a single `POST /v1/chat/completions` request through Dahl to confirm everything works. You need:
 
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+- Base URL: `https://inference.dahl.global/v1`
+- A Bearer token from [`POST /tokens`](https://inference.dahl.global/tokens) or [dahl.global/#api-key](https://dahl.global/#api-key)
+- A current model ID from [`GET /v1/models`](/models)
 
-## Prerequisites
+## Before you start
 
-Before you begin, you must have:
-
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
-
-<Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
-
-    ```bash
-    npm install your-package
-    ```
-  </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
-
-    ```bash
-    your-cli init
-    ```
-  </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
-
-    ```bash
-    your-cli start
-    ```
-  </Step>
-</Steps>
+- An API key (see [Authentication](/authentication))
+- Enough **available tokens** on the key for at least one request (new keys include a starter balance)
+- A fresh model ID from `GET /v1/models` — do not guess IDs or copy them from marketing pages
 
 <Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
-
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+  Store your key securely. Treat it like a password: do not commit it to git or paste it into public channels.
 </Tip>
+
+## Step 1 — Get your API key
+
+**Option A — landing page (recommended)**
+
+Open [dahl.global/#api-key](https://dahl.global/#api-key), wait for the key to load, and copy it.
+
+**Option B — API**
+
+```bash
+curl -X POST https://inference.dahl.global/tokens
+```
+
+Example response:
+
+```json
+{
+  "token": "your-api-token",
+  "available_tokens": 100000000
+}
+```
+
+Export the token for the next steps:
+
+```bash
+export DAHL_API_KEY="your-api-token"
+```
+
+## Step 2 — List available models
+
+`GET /v1/models` is public — no Authorization header required.
+
+```bash
+curl https://inference.dahl.global/v1/models
+```
+
+Pick an `id` from the `data` array. For most tasks, start with **MiniMax M2.7**:
+
+`MiniMaxAI/MiniMax-M2.7`
+
+If the list is empty or the service is still starting, retry with short bounded backoff.
+
+## Step 3 — Send your first request
+
+```bash
+curl https://inference.dahl.global/v1/chat/completions \
+  -H "Authorization: Bearer $DAHL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "MiniMaxAI/MiniMax-M2.7",
+    "messages": [
+      { "role": "user", "content": "Hello, Dahl!" }
+    ]
+  }'
+```
+
+## Expected result
+
+A successful request returns **200 OK**. The assistant text is in `choices[0].message.content`.
+
+```json
+{
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": "..."
+      }
+    }
+  ]
+}
+```
+
+## Common first failures
+
+| Response | What it usually means | What to check |
+| --- | --- | --- |
+| `401` with `Missing API token` | No `Authorization` header | Add `Authorization: Bearer` with your token |
+| `401` with `invalid API token` or `expired API token` | Key is wrong or no longer valid | Create a new key via [dahl.global/#api-key](https://dahl.global/#api-key) or `POST /tokens` |
+| `402` with `available tokens exhausted` | The key has no remaining balance | Get a new key or wait for quota refresh |
+| `4xx` / `502` from upstream | Stale or unsupported `model` id | Call `GET /v1/models` and use an `id` from the response |
+| `503` or timeouts | Network or node overload | Retry with short backoff |
+
+## See also
+
+- [Authentication](/authentication) — how tokens work and how to check balance
+- [Models](/models) — model IDs and selection tips
+- [Try chat](https://inference.dahl.global/chat) — browser UI with the same API underneath
+- [dahl.global](https://dahl.global) — landing, pricing context, and API key UI
