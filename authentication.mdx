@@ -30,6 +30,29 @@ Example response:
 
 Use the `token` value as `Authorization: Bearer <token>`. The `available_tokens` field reflects the allowance on that key; there is no separate billing dashboard yet.
 
+<Note>
+  Token endpoints live at the service root (`/tokens`), not under `/v1`. Chat completions use `https://inference.dahl.global/v1/...`.
+</Note>
+
+## Check remaining balance
+
+After you have a key, call `GET /tokens/current` with the same Bearer header to read the remaining allowance. The balance decreases when successful inference requests complete — Dahl deducts **input + output** tokens from the upstream `usage` field when present.
+
+```bash
+curl https://inference.dahl.global/tokens/current \
+  -H "Authorization: Bearer $DAHL_API_KEY"
+```
+
+Example response:
+
+```json
+{
+  "available_tokens": 99823456
+}
+```
+
+You can poll this endpoint from scripts or dashboards. The [chat UI](https://inference.dahl.global/chat) uses the same call to refresh the balance shown in the header.
+
 ## Use the key on requests
 
 ```bash
@@ -61,6 +84,18 @@ Missing or invalid keys return **401** with a JSON body:
 ```
 
 Other messages you may see: `invalid API token`, `expired API token`.
+
+When the key has no allowance left, protected inference routes return **402 Payment Required**:
+
+```json
+{
+  "error": {
+    "message": "available tokens exhausted"
+  }
+}
+```
+
+Call `GET /tokens/current` to check the balance before a long run, or create a new key with `POST /tokens` when the allowance is spent.
 
 ## Security practices
 
