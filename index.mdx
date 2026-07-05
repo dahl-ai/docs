@@ -14,7 +14,7 @@ Dahl gives you an **OpenAI-compatible API** for open models running on decentral
   <Card title="Try chat" icon="message" href="https://inference.dahl.global/chat">
     Test models in the browser before wiring them into your app.
   </Card>
-  <Card title="Get API key" icon="key" href="https://inference.dahl.global/#api-key">
+  <Card title="Get API key" icon="key" href="https://inference.dahl.global/#models">
     Copy a key from the landing page or create one with `POST /tokens`.
   </Card>
   <Card title="Models" icon="cube" href="/models">
@@ -24,7 +24,7 @@ Dahl gives you an **OpenAI-compatible API** for open models running on decentral
 
 ## How it works
 
-1. **Get a token** — `POST https://inference.dahl.global/tokens` or use [inference.dahl.global/#api-key](https://inference.dahl.global/#api-key).
+1. **Get a token** — `POST https://inference.dahl.global/tokens` or use [inference.dahl.global/#models](https://inference.dahl.global/#models).
 2. **List models** — `GET /v1/models` (no API key required).
 3. **Call the API** — `POST /v1/chat/completions` with `Authorization: Bearer` and your token.
 

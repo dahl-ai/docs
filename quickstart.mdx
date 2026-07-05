@@ -6,7 +6,7 @@ description: "Send one OpenAI-compatible chat completion through Dahl to verify 
 Send a single `POST /v1/chat/completions` request through Dahl to confirm everything works. You need:
 
 - Base URL: `https://inference.dahl.global/v1`
-- A Bearer token from [`POST /tokens`](https://inference.dahl.global/tokens) or [inference.dahl.global/#api-key](https://inference.dahl.global/#api-key)
+- A Bearer token from [`POST /tokens`](https://inference.dahl.global/tokens) or [inference.dahl.global/#models](https://inference.dahl.global/#models)
 - A current model ID from [`GET /v1/models`](/models)
 
 ## Before you start
@@ -23,7 +23,7 @@ Send a single `POST /v1/chat/completions` request through Dahl to confirm everyt
 
 **Option A — landing page (recommended)**
 
-Open [inference.dahl.global/#api-key](https://inference.dahl.global/#api-key), wait for the key to load, and copy it.
+Open [inference.dahl.global/#models](https://inference.dahl.global/#models), wait for the key to load, and copy it from the yellow API key field below the model examples (or from the `curl` snippet).
 
 **Option B — API**
 
@@ -96,7 +96,7 @@ A successful request returns **200 OK**. The assistant text is in `choices[0].me
 | Response | What it usually means | What to check |
 | --- | --- | --- |
 | `401` with `Missing API token` | No `Authorization` header | Add `Authorization: Bearer` with your token |
-| `401` with `invalid API token` or `expired API token` | Key is wrong or no longer valid | Create a new key via [inference.dahl.global/#api-key](https://inference.dahl.global/#api-key) or `POST /tokens` |
+| `401` with `invalid API token` or `expired API token` | Key is wrong or no longer valid | Create a new key via [inference.dahl.global/#models](https://inference.dahl.global/#models) or `POST /tokens` |
 | `4xx` / `502` from upstream | Stale or unsupported `model` id | Call `GET /v1/models` and use an `id` from the response |
 | `503` or timeouts | Network or node overload | Retry with short backoff |
 

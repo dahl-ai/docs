@@ -34,7 +34,7 @@
         },
         {
           "anchor": "Get API key",
-          "href": "https://inference.dahl.global/#api-key",
+          "href": "https://inference.dahl.global/#models",
           "icon": "key"
         }
       ]
@@ -54,7 +54,7 @@
     "primary": {
       "type": "button",
       "label": "Get API key",
-      "href": "https://inference.dahl.global/#api-key"
+      "href": "https://inference.dahl.global/#models"
     }
   },
   "contextual": {
