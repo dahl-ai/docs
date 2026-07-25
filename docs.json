@@ -33,9 +33,9 @@
           "icon": "message"
         },
         {
-          "anchor": "Get API key",
-          "href": "https://inference.dahl.global/#models",
-          "icon": "key"
+          "anchor": "Account",
+          "icon": "user",
+          "href": "https://inference.dahl.global/account"
         }
       ]
     }
@@ -49,12 +49,16 @@
       {
         "label": "Chat",
         "href": "https://inference.dahl.global/chat"
+      },
+      {
+        "href": "https://inference.dahl.global/account",
+        "label": "Account"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Get API key",
-      "href": "https://inference.dahl.global/#models"
+      "label": "Create account",
+      "href": "https://inference.dahl.global/account"
     }
   },
   "contextual": {

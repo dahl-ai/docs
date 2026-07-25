@@ -3,7 +3,7 @@ title: "Introduction"
 description: "OpenAI-compatible inference API on the Gonka network — fast start, no vendor lock-in."
 ---
 
-Dahl gives you an **OpenAI-compatible API** for open models running on decentralized GPU infrastructure. Use the same endpoints and request shape you already know (`/v1/models`, `/v1/chat/completions`), with a Bearer token from the landing page or `POST /tokens`.
+Dahl gives you an **OpenAI-compatible API** for open models running on decentralized GPU infrastructure. Use the same endpoints and request shape you already know (`/v1/models`, `/v1/chat/completions`), with a Bearer API key from your [account](https://inference.dahl.global/account) or `POST /tokens`.
 
 **Base URL:** `https://inference.dahl.global/v1`
 
@@ -11,12 +11,15 @@ Dahl gives you an **OpenAI-compatible API** for open models running on decentral
   <Card title="Quickstart" icon="rocket" href="/quickstart">
     Get an API key and send your first chat completion in under five minutes.
   </Card>
+
   <Card title="Try chat" icon="message" href="https://inference.dahl.global/chat">
     Test models in the browser before wiring them into your app.
   </Card>
-  <Card title="Get API key" icon="key" href="https://inference.dahl.global/#models">
-    Copy a key from the landing page or create one with `POST /tokens`.
+
+  <Card title="Create account" icon="user" href="https://inference.dahl.global/account">
+    Username \+ fingerprint — first API key issued immediately.
   </Card>
+
   <Card title="Models" icon="cube" href="/models">
     See which model IDs are available and which one to use by default.
   </Card>
@@ -24,8 +27,10 @@ Dahl gives you an **OpenAI-compatible API** for open models running on decentral
 
 ## How it works
 
-1. **Get a token** — `POST https://inference.dahl.global/tokens` or use [inference.dahl.global/#models](https://inference.dahl.global/#models).
+1. **Get a key** — create an [account](https://inference.dahl.global/account) (recommended) or call `POST https://inference.dahl.global/tokens`.
 2. **List models** — `GET /v1/models` (no API key required).
-3. **Call the API** — `POST /v1/chat/completions` with `Authorization: Bearer` and your token.
+3. **Call the API** — `POST /v1/chat/completions` with `Authorization: Bearer` and your key.
 
 The recommended default model is **MiniMax M2.7** (`MiniMaxAI/MiniMax-M2.7`). Other models are listed on the network; always pick IDs from `GET /v1/models` rather than hardcoding stale values.
+
+See [Authentication](/authentication) for accounts, fingerprints, key claim/revoke, and balances.

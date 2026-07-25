@@ -1,49 +1,115 @@
 ---
-title: "API keys"
-description: "Create a Bearer API key and attach it to inference requests."
+title: "Authentication"
+description: "Create an account, get a Bearer API key, and manage keys from your Dahl account."
+sidebarTitle: "Authentication"
 ---
 
-Dahl does not use account sign-in for the API today. You get a **Bearer API key** from the landing page or `POST /tokens`, then send it in the `Authorization` header on `POST /v1/chat/completions`.
+Dahl inference uses a **Bearer API key** on every `POST /v1/chat/completions` request. Keys are free and each includes **100 million tokens**. There is no payment UI yet — create another key when a key's allowance is spent.
 
-Each new key currently includes **100 million tokens**. No payment or balance UI yet — create a new key when you need another allowance.
+You can get a key two ways:
 
-## Create a key
+1. **Recommended — create an account** (username \+ fingerprint), then manage keys at [inference.dahl.global/account](https://inference.dahl.global/account).
+2. **Quick — anonymous key** from the landing page or `POST /tokens` (same 100M allowance; you can link it to an account later).
 
-### Landing page
+The account session (cookie) is only for the account UI. Inference always uses `Authorization: Bearer <api_key>`.
 
-Go to [inference.dahl.global/#models](https://inference.dahl.global/#models). The page calls `POST /tokens` automatically and shows the key in the yellow field below the model examples (anchor `#api-key`).
+## Create an account
 
-### API
+1. Open [inference.dahl.global](https://inference.dahl.global) and click **Create account** (or go to [/account](https://inference.dahl.global/account)).
+2. Pick a username: **3–20 characters**, letters, digits, underscore.
+3. Save the **fingerprint** you are shown once — it is your password. We store only a hash; fingerprints **cannot be recovered**.
+4. Your first API key is issued immediately. Copy it into your password manager.
+
+### Sign in again
+
+Sign-in needs only the fingerprint (not the username):
 
 ```bash
-curl -X POST https://inference.dahl.global/tokens
+curl -X POST https://inference.dahl.global/v1/auth/signin \
+  -H "Content-Type: application/json" \
+  -d '{"fingerprint":"your-32-char-fingerprint"}' \
+  -c cookies.txt
+```
+
+Or use **Sign in** on the site and paste the fingerprint. Session cookies last 30 days.
+
+<Warning>
+  If you lose the fingerprint, create a new account. There is no email recovery by design.
+</Warning>
+
+### Signup via API
+
+```bash
+curl -X POST https://inference.dahl.global/v1/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"username":"swift_eagle_449"}'
 ```
 
 Example response:
 
 ```json
 {
-  "token": "your-api-token",
+  "user": { "user_id": "…", "username": "swift_eagle_449", "created_at": "…" },
+  "fingerprint": "a1b2c3d4e5f6…",
+  "api_key": {
+    "id": 123,
+    "token": "dahl_…",
+    "available_tokens": 100000000
+  }
+}
+```
+
+Check username availability first with `GET /v1/auth/check-username?username=…`.
+
+## Manage keys in your account
+
+At [inference.dahl.global/account](https://inference.dahl.global/account) (or with a session cookie):
+
+| Action | Endpoint |
+| --- | --- |
+| List keys | `GET /v1/account/keys` |
+| Create a key | `POST /v1/account/keys` |
+| Revoke a key | `DELETE /v1/account/keys/{id}` |
+| Link an anonymous key | `POST /v1/account/keys/claim` with `{ "token": "dahl_…" }` |
+| Usage summary | `GET /v1/account/usage?days=30` |
+| Sign out | `POST /v1/auth/signout` |
+
+Each new key again includes **100 million tokens**. Statuses: `active`, `exhausted`, `revoked`.
+
+```bash
+curl -X POST https://inference.dahl.global/v1/account/keys \
+  -b cookies.txt
+```
+
+## Anonymous key (no account)
+
+Still supported for a fast start — the landing page **Get API key** / scratch flow and `POST /tokens` create an unattached key:
+
+```bash
+curl -X POST https://inference.dahl.global/tokens
+```
+
+```json
+{
+  "token": "dahl_…",
   "available_tokens": 100000000
 }
 ```
 
-Use the `token` value as `Authorization: Bearer <token>`. The `available_tokens` field reflects the allowance on that key; there is no separate billing dashboard yet.
+You can later **claim** that key into an account from the account page so balances and usage live under one profile.
 
 <Note>
-  Token endpoints live at the service root (`/tokens`), not under `/v1`. Chat completions use `https://inference.dahl.global/v1/...`.
+  Token issue endpoints live at the service root (`/tokens`) or under `/v1/auth` and `/v1/account`. Chat completions use `https://inference.dahl.global/v1/...`.
 </Note>
 
 ## Check remaining balance
 
-After you have a key, call `GET /tokens/current` with the same Bearer header to read the remaining allowance. The balance decreases when successful inference requests complete — Dahl deducts **input + output** tokens from the upstream `usage` field when present.
+With any API key, call `GET /tokens/current`:
 
 ```bash
 curl https://inference.dahl.global/tokens/current \
   -H "Authorization: Bearer $DAHL_API_KEY"
 ```
-
-Example response:
 
 ```json
 {
@@ -51,7 +117,7 @@ Example response:
 }
 ```
 
-You can poll this endpoint from scripts or dashboards. The [chat UI](https://inference.dahl.global/chat) uses the same call to refresh the balance shown in the header.
+Successful inference deducts **input \+ output** tokens from the upstream `usage` field when present. The [chat UI](https://inference.dahl.global/chat) and account page refresh the same balance.
 
 ## Use the key on requests
 
@@ -69,11 +135,13 @@ The header must be exactly two words: `Bearer` followed by the token. Other form
 These do **not** require a token:
 
 - `GET /v1/models` — list model IDs
+- `GET /v1/status` — recent model uptime probes
 - `GET /health` — service health
+- `GET /v1/auth/check-username` — username availability
 
 ## Error responses
 
-Missing or invalid keys return **401** with a JSON body:
+Missing or invalid keys return **401**:
 
 ```json
 {
@@ -83,7 +151,7 @@ Missing or invalid keys return **401** with a JSON body:
 }
 ```
 
-Other messages you may see: `invalid API token`, `expired API token`.
+Other messages you may see: `invalid API token`, `expired API token`, `not signed in`, `session expired`, `invalid fingerprint`.
 
 When the key has no allowance left, protected inference routes return **402 Payment Required**:
 
@@ -95,10 +163,11 @@ When the key has no allowance left, protected inference routes return **402 Paym
 }
 ```
 
-Call `GET /tokens/current` to check the balance before a long run, or create a new key with `POST /tokens` when the allowance is spent.
+Create a new key (account page or `POST /tokens`) when the allowance is spent. Signup / sign-in rate limits return **429** (`too many signup attempts` / `too many sign-in attempts`).
 
 ## Security practices
 
-- Do not commit tokens to source control — use environment variables or a secrets manager
-- Rotate keys if they may have been exposed
-- Use separate keys per environment (development, staging, production) when possible
+- Treat the **fingerprint** like a password — save it once, never commit it
+- Do not commit API keys to source control — use environment variables or a secrets manager
+- Revoke keys from the account page if they may have been exposed
+- Prefer one account with separate keys per environment (development, staging, production)
