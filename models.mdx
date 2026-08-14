@@ -17,9 +17,10 @@ These models are typically returned from production (verify with `GET /v1/models
 | --- | --- |
 | `MiniMaxAI/MiniMax-M2.7` | **Default recommendation** — general chat and coding |
 | `moonshotai/Kimi-K2.6` | Long-context and reasoning workloads |
+| `deepseek-ai/DeepSeek-V4-Flash-0731` | Fast coding, reasoning, and agent workloads (1M context) |
 | `zai-org/GLM-5.2` | Coming soon — not available for inference yet |
 
-The [landing page](https://inference.dahl.global/#models) shows the same model IDs in copy-paste `curl` examples (MiniMax and Kimi tabs). Only the `model` field changes between them.
+The [landing page](https://inference.dahl.global/#models) shows the same model IDs in copy-paste `curl` examples (MiniMax, Kimi, and DeepSeek tabs). Only the `model` field changes between them.
 
 ## Default choice
 
@@ -49,6 +50,18 @@ curl https://inference.dahl.global/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "moonshotai/Kimi-K2.6",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
+
+**DeepSeek V4 Flash** — same request shape, different `model` value:
+
+```bash
+curl https://inference.dahl.global/v1/chat/completions \
+  -H "Authorization: Bearer $DAHL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
     "messages": [{"role": "user", "content": "Hello!"}]
   }'
 ```
